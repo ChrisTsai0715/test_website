@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://b66587ff.test-website-g8j.pages.dev/sitemap.xml
