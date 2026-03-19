@@ -1,0 +1,1400 @@
+# NotifyHub API - LLM-Optimized Documentation
+
+> This document is an LLM-friendly conversion of the NotifyHub API documentation, structured to help AI assistants guide users in utilizing the NotifyHub service effectively.
+> 
+> Original Documentation: https://docs.notifyhub.example.com
+> 
+> Last Updated: March 2026
+
+---
+
+## Core Principles
+
+When helping users implement NotifyHub APIs, follow these guidelines:
+
+0. **API Token Required**: All requests require an `api-token` header for authentication. For testing, use `YOUR_API_TOKEN`. For production, users must contact support@notifyhub.example.com to obtain their own token.
+1. **Security First**: Never expose API tokens in client-side code. Store them securely in environment variables or backend services.
+2. **Base URL**: The test environment endpoint is `https://api.notifyhub.example.com`. Production URLs should be obtained from the NotifyHub team.
+3. **Timeout Configuration**: All APIs support `wait_for_timeout` (page rendering timeout, max 60s).
+4. **Response Format**: All responses follow a unified JSON structure with `success`, `result`, `context`, and `errors` fields.
+5. **Error Handling**: Check the `success` field first. If false, examine the `errors` array for details. HTTP status codes indicate different error types (400: parameter error, 422: request failed, 429: rate limited).
+---
+
+## Overview of All NotifyHub APIs
+
+NotifyHub provides four main categories of APIs:
+
+### Reader APIs
+- **content**: Fetch the complete HTML content of a webpage after rendering
+- **markdown**: Convert webpage content to LLM-friendly markdown format
+- **screenshot**: Capture a screenshot of a webpage
+- **links**: Extract all links from a webpage
+- **snapshot**: Get a complete webpage snapshot (including screenshot and content)
+- **pdf**: Convert a webpage to PDF format
+
+### AI-Powered APIs
+- **json**: Use AI to extract structured data from webpages based on prompts or schemas (BETA)
+
+### Search APIs
+- **serp**: Retrieve search engine results page for a given keyword
+
+### MCP Integration
+- **Reader MCP**: Access webpage content through Model Context Protocol for AI applications
+- **Browser Operation MCP** (NEW): Full browser automation capabilities through MCP, enabling AI agents to navigate, click, type, and interact with webpages like a human user
+
+---
+
+## NotifyHub API Documentation
+
+## Reader APIs
+
+### 1. Content API - Get Webpage HTML Content
+
+**Endpoint:** `POST https://api.notifyhub.example.com/v1/content`
+
+**Purpose:** Access a specified URL and retrieve the rendered raw HTML content of the page.
+
+**Best for:** 
+- Getting the complete HTML structure of a webpage
+- Scraping dynamic content that requires JavaScript rendering
+- Extracting structured data from web pages
+
+**Method:** POST
+
+**Authorization:** Header-based API token
+
+**Headers:**
+- **api-token** (required): Your API authentication token (e.g., `YOUR_API_TOKEN` for testing)
+- **Content-Type** (required): `application/json`
+
+**Request Body Schema:**
+```json
+{
+  "url": {
+    "type": "string",
+    "required": true,
+    "description": "The target URL to access (e.g., https://www.example.com)"
+  },
+  "wait_for_timeout": {
+    "type": "integer",
+    "required": false,
+    "default": 10,
+    "description": "Timeout in seconds to wait for page rendering (not total request time). Maximum 60 seconds."
+  },
+  "action_timeout": {
+    "type": "integer",
+    "required": false,
+    "default": 10,
+    "description": "Timeout in seconds to wait for actions after page rendering (e.g., HTML extraction, screenshot). Maximum 60 seconds."
+  },
+  "reject_resource_types": {
+    "type": "array",
+    "required": false,
+    "default": [],
+    "description": "Resource types to skip loading during page load",
+    "options": ["stylesheet", "image", "media", "font", "script"]
+  },
+  "goto_options": {
+    "type": "object",
+    "required": false,
+    "default": {},
+    "description": "Configure specific navigation behavior",
+    "properties": {
+      "referer": {
+        "type": "string",
+        "required": false,
+        "default": "",
+        "description": "Set the referer header for HTTP requests"
+      },
+      "timeout": {
+        "type": "integer",
+        "required": false,
+        "default": 10,
+        "description": "Timeout in seconds for page navigation. Maximum 60 seconds."
+      },
+      "wait_until": {
+        "type": "string",
+        "required": false,
+        "default": "load",
+        "description": "Page loading strategy",
+        "options": ["domcontentloaded", "load", "networkidle"]
+      }
+    }
+  },
+  "wait_for_selector": {
+    "type": "object",
+    "required": false,
+    "default": {},
+    "description": "Wait for specific element on the page for precise control over page loading",
+    "properties": {
+      "selector": {
+        "type": "string",
+        "required": false,
+        "default": "",
+        "description": "CSS or XPath selector to specify the target element to wait for. Examples: .product-item (class), #product-item (id)"
+      },
+      "timeout": {
+        "type": "integer",
+        "required": false,
+        "default": 10,
+        "description": "Timeout in seconds for waiting for the target element. Maximum 60 seconds."
+      },
+      "state": {
+        "type": "string",
+        "required": false,
+        "default": "visible",
+        "description": "Wait for the target element to be visible or hidden",
+        "options": ["visible", "hidden"]
+      }
+    }
+  },
+  "is_disable_javascript": {
+    "type": "boolean",
+    "required": false,
+    "default": false,
+    "description": "Whether to disable JavaScript rendering"
+  },
+  "extra_http_headers": {
+    "type": "object",
+    "required": false,
+    "default": {},
+    "description": "Additional HTTP headers to set for each request"
+  },
+  "user_agent": {
+    "type": "string",
+    "required": false,
+    "default": "Chrome default",
+    "description": "Custom user agent string for requests"
+  },
+  "exclude_tags": {
+    "type": "array",
+    "required": false,
+    "default": [],
+    "description": "HTML tags to remove from the cleaned webpage HTML"
+  },
+  "is_enable_base64_compression": {
+    "type": "boolean",
+    "required": false,
+    "default": false,
+    "description": "Whether to return content with base64 encoding"
+  },
+  "max_age": {
+    "type": "integer",
+    "required": false,
+    "default": 0,
+    "description": "Cache control in seconds. When >0, enables caching: if a cached version of the page was generated less than this many seconds ago, the cached page is returned. This greatly improves fetch speed when fresh data is not required. NOTE: Enabling cache conflicts with some parameters — (a) if max_age>0 and cookies is not default, the request will fail; (b) if max_age>0, the following parameters will be reset to defaults: reject_request_pattern, reject_resource_types, is_disable_javascript, script_tags, style_tags, allow_request_pattern, allow_resource_types, distiller_js_file, is_enable_base64_compression, include_tags, exclude_tags."
+  },
+  "fingerprint": {
+    "type": "object",
+    "required": false,
+    "default": {},
+    "description": "Set browser fingerprint to simulate specific device and browser characteristics",
+    "properties": {
+      "navigator": {
+        "type": "object",
+        "required": false,
+        "description": "Browser environment information (Navigator)",
+        "properties": {
+          "user_agent": {
+            "type": "string",
+            "required": false,
+            "description": "Complete browser user agent string. Example: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'"
+          },
+          "platform": {
+            "type": "string",
+            "required": false,
+            "description": "Operating system platform declared by browser. Example: 'Windows', 'Linux', 'MacIntel'"
+          },
+          "max_touch_points": {
+            "type": "integer",
+            "required": false,
+            "description": "Maximum number of simultaneous touch points supported by the device"
+          },
+          "hardware_concurrency": {
+            "type": "integer",
+            "required": false,
+            "description": "Number of logical processor cores"
+          },
+          "device_memory": {
+            "type": "integer",
+            "required": false,
+            "description": "Approximate device memory size in GB"
+          },
+          "language": {
+            "type": "string",
+            "required": false,
+            "description": "Browser's primary language setting. Example: 'en-US', 'zh-CN'"
+          },
+          "languages": {
+            "type": "array",
+            "required": false,
+            "description": "Array of user's preferred languages. Example: ['zh-CN', 'zh', 'en-US', 'en']"
+          }
+        }
+      },
+      "screen": {
+        "type": "object",
+        "required": false,
+        "description": "Screen and viewport geometry parameters",
+        "properties": {
+          "width": {
+            "type": "integer",
+            "required": false,
+            "description": "Total screen width in pixels. Example: 1920"
+          },
+          "height": {
+            "type": "integer",
+            "required": false,
+            "description": "Total screen height in pixels. Example: 1080"
+          },
+          "pixel_depth": {
+            "type": "integer",
+            "required": false,
+            "description": "Pixel depth (bits per pixel). Example: 24"
+          },
+          "avail_height": {
+            "type": "integer",
+            "required": false,
+            "description": "Available height excluding system UI (e.g., taskbar)"
+          },
+          "avail_width": {
+            "type": "integer",
+            "required": false,
+            "description": "Available width excluding system UI"
+          },
+          "avail_top": {
+            "type": "integer",
+            "required": false,
+            "description": "Top offset of available area (for multi-monitor systems)"
+          },
+          "avail_left": {
+            "type": "integer",
+            "required": false,
+            "description": "Left offset of available area (for multi-monitor systems)"
+          },
+          "color_depth": {
+            "type": "integer",
+            "required": false,
+            "description": "Color depth (bits in color buffer). Example: 24"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Example Request:**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/content \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "wait_for_timeout": 10
+  }'
+```
+
+**Example Request with Fingerprint:**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/content \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "fingerprint": {
+      "navigator": {
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "platform": "Windows",
+        "max_touch_points": 10,
+        "hardware_concurrency": 16,
+        "device_memory": 8,
+        "language": "zh-CN",
+        "languages": ["zh-CN", "zh", "en-US", "en"]
+      },
+      "screen": {
+        "width": 1920,
+        "height": 1080,
+        "pixel_depth": 24,
+        "avail_height": 1040,
+        "avail_width": 1920,
+        "color_depth": 24
+      }
+    }
+  }'
+```
+
+**Success Response (HTTP 200):**
+```json
+{
+  "success": true,
+  "result": "<!DOCTYPE html><html>...</html>",
+  "context": {
+    "status_code": 200,
+    "title": "Example Domain"
+  },
+  "errors": []
+}
+```
+
+**Response Fields:**
+- **success** (boolean): Indicates whether the request was successful
+- **result** (string): The HTML content of the webpage
+- **context** (object): Additional metadata about the request
+  - **status_code** (integer): HTTP status code of the target webpage
+  - **title** (string): The page title extracted from the HTML
+- **errors** (array): List of error messages (empty on success)
+
+**Notes:**
+- The `wait_for_timeout` parameter controls page rendering time, not the total API response time
+- For JavaScript-heavy sites, ensure `is_disable_javascript` is set to `false` (default)
+- The `exclude_tags` parameter helps clean up HTML by removing unwanted elements
+- Use `max_age` to enable caching and significantly improve fetch speed when you don't need the freshest data. Be aware of parameter conflicts when caching is enabled.
+
+---
+
+### 2. Markdown API - Convert Webpage to Markdown
+
+**Endpoint:** `POST https://api.notifyhub.example.com/v1/markdown`
+
+**Purpose:** Access a specified URL and extract content in LLM-friendly markdown format.
+
+**Best for:**
+- Converting web content for AI/LLM consumption
+- Extracting readable, structured text from web pages
+- Preparing web content for further processing or analysis
+
+**Method:** POST
+
+**Authorization:** Header-based API token
+
+**Headers:**
+- **api-token** (required): Your API authentication token
+- **Content-Type** (required): `application/json`
+
+**Request Body Schema:**
+```json
+{
+  "url": {
+    "type": "string",
+    "required": true,
+    "description": "The target URL to access and convert to markdown"
+  },
+  "markdown_options": {
+    "type": "object",
+    "required": false,
+    "default": {},
+    "description": "Markdown style configuration parameters",
+    "properties": {
+      "md_hr": {
+        "type": "string",
+        "required": false,
+        "default": "* * *",
+        "description": "Define markdown horizontal line style. Example: '**'"
+      },
+      "md_bullet_list_marker": {
+        "type": "string",
+        "required": false,
+        "default": "*",
+        "description": "Define markdown bullet list marker style",
+        "options": ["-", "*", "+"]
+      },
+      "md_em_delimiter": {
+        "type": "string",
+        "required": false,
+        "default": "_",
+        "description": "Define markdown emphasis delimiter",
+        "options": ["_", "*"]
+      },
+      "md_strong_delimiter": {
+        "type": "string",
+        "required": false,
+        "default": "**",
+        "description": "Define markdown strong emphasis delimiter",
+        "options": ["**", "__"]
+      },
+      "md_link_style": {
+        "type": "string",
+        "required": false,
+        "default": "inline",
+        "description": "Define markdown link style",
+        "options": ["inline", "reference"]
+      }
+    }
+  },
+  "wait_for_timeout": {
+    "type": "integer",
+    "required": false,
+    "default": 10,
+    "description": "Timeout in seconds to wait for actions after page rendering (e.g., HTML extraction, screenshot). Maximum 60 seconds."
+  }
+}
+```
+*Note: This API supports the same optional parameters as the Content API, including: `goto_options`, `wait_for_selector`, `user_agent`, `is_disable_javascript`, `fingerprint`.*
+
+**Example Request:**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/markdown \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com"
+  }'
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "result": "# Example Domain\n\nThis domain is for use in illustrative examples...",
+  "context": {
+    "status_code": 200,
+    "title": "Example Domain"
+  },
+  "errors": []
+}
+```
+
+**Response Fields:**
+- **result** (string): The webpage content converted to markdown format
+- Other fields same as Content API
+
+**Notes:**
+- The markdown conversion automatically removes unnecessary HTML elements
+- Preserves important structural elements like headings, lists, links, and text formatting
+- Ideal for feeding web content into LLMs or text analysis tools
+
+---
+
+### 3. Screenshot API - Capture Webpage Screenshot
+
+**Endpoint:** `POST https://api.notifyhub.example.com/v1/screenshot`
+
+**Purpose:** Access a specified URL and capture a screenshot of the rendered webpage.
+
+**Best for:**
+- Visual verification of webpage rendering
+- Capturing dynamic content that changes based on user interaction
+- Creating visual documentation of web pages
+
+**Method:** POST
+
+**Authorization:** Header-based API token
+
+**Headers:**
+- **api-token** (required): Your API authentication token
+- **Content-Type** (required): `application/json`
+
+**Request Body Schema:**
+```json
+{
+  "url": {
+    "type": "string",
+    "required": true,
+    "description": "The target URL to capture"
+  },
+  "screenshot_options": {
+    "type": "object",
+    "required": false,
+    "default": {},
+    "description": "Screenshot style configuration parameters",
+    "properties": {
+      "full_page": {
+        "type": "boolean",
+        "required": false,
+        "default": false,
+        "description": "When set to true, captures the entire scrollable page instead of just the current visible viewport"
+      },
+      "type": {
+        "type": "string",
+        "required": false,
+        "default": "png",
+        "description": "Set the image format",
+        "options": ["png", "jpeg"]
+      },
+      "clip": {
+        "type": "object",
+        "required": false,
+        "default": {},
+        "description": "Crop screenshot parameters",
+        "properties": {
+          "height": {
+            "type": "integer",
+            "required": false,
+            "description": "Height of the cropped image"
+          },
+          "width": {
+            "type": "integer",
+            "required": false,
+            "description": "Width of the cropped image"
+          },
+          "x": {
+            "type": "integer",
+            "required": false,
+            "description": "X coordinate of the crop starting point"
+          },
+          "y": {
+            "type": "integer",
+            "required": false,
+            "description": "Y coordinate of the crop starting point"
+          }
+        }
+      }
+    }
+  },
+  "wait_for_timeout": {
+    "type": "integer",
+    "required": false,
+    "default": 10,
+    "description": "Timeout in seconds to wait for actions after page rendering (e.g., HTML extraction, screenshot). Maximum 60 seconds."
+  }
+}
+```
+*Note: This API supports the same optional parameters as the Content API, including: `goto_options`, `wait_for_selector`, `user_agent`, `is_disable_javascript`, `fingerprint`.*
+
+**Example Request:**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/screenshot \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com"
+  }'
+```
+
+**Success Response:**
+```
+HTTP/1.1 200 OK
+Content-Type: application/octet-stream
+
+[Binary Image Data Stream]
+```
+
+**Response Format:**
+- **Content-Type**: `application/octet-stream` (binary data stream)
+- **Response Body**: Direct binary image data (not JSON, not base64)
+- The response is the image file itself (PNG or JPEG), ready to be saved directly
+
+**Notes:**
+- Unlike text-based NotifyHub APIs, the Screenshot API returns **binary image data directly**, not JSON
+- Simply save the response body to an image file (`.png` or `.jpeg` depending on your `screenshot_options.type`)
+- Useful for visual regression testing and webpage monitoring
+- The screenshot captures the full rendered page as it appears in the browser
+
+---
+
+### 4. Links API - Extract Webpage Links
+
+**Endpoint:** `POST https://api.notifyhub.example.com/v1/links`
+
+**Purpose:** Access a specified URL and extract all links from the webpage.
+
+**Best for:**
+- Website crawling and link discovery
+- Building sitemaps
+- Analyzing webpage structure and navigation
+
+**Method:** POST
+
+**Authorization:** Header-based API token
+
+**Headers:**
+- **api-token** (required): Your API authentication token
+- **Content-Type** (required): `application/json`
+
+**Request Body Schema:**
+```json
+{
+  "url": {
+    "type": "string",
+    "required": true,
+    "description": "The target URL to extract links from"
+  },
+  "wait_for_timeout": {
+    "type": "integer",
+    "required": false,
+    "default": 10,
+    "description": "Timeout in seconds to wait for actions after page rendering (e.g., HTML extraction, screenshot). Maximum 60 seconds."
+  }
+}
+```
+*Note: This API supports the same optional parameters as the Content API, including: `goto_options`, `wait_for_selector`, `user_agent`, `is_disable_javascript`, `fingerprint`.*
+
+**Example Request:**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/links \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com"
+  }'
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "result": ["https://example1.com", "https://example2.com", "https://example3.com"],
+  "context": {
+    "status_code": 200,
+    "title": "Example Domain"
+  },
+  "errors": []
+}
+```
+
+**Response Fields:**
+- **success** (boolean): Indicates whether the request was successful
+- **result** (array): Array of string of links found on the webpage
+- **context** (object): Additional metadata about the request
+  - **status_code** (integer): HTTP status code of the target webpage
+  - **title** (string): The page title extracted from the HTML
+- **errors** (array): List of error messages (empty on success)
+
+**Notes:**
+- Returns all hyperlinks found in the webpage
+- Each link includes both the visible text and the target URL
+- Useful for crawling and discovering related pages
+- Relative URLs are converted to absolute URLs
+
+---
+
+### 5. Snapshot API - Get Webpage Snapshot
+
+**Endpoint:** `POST https://api.notifyhub.example.com/v1/snapshot`
+
+**Purpose:** Access a specified URL and retrieve a complete snapshot including screenshot and content.
+
+**Best for:**
+- Comprehensive webpage archival
+- Creating complete records of webpage state
+- Combining visual and textual data for analysis
+
+**Method:** POST
+
+**Authorization:** Header-based API token
+
+**Headers:**
+- **api-token** (required): Your API authentication token
+- **Content-Type** (required): `application/json`
+
+**Request Body Schema:**
+```json
+{
+  "url": {
+    "type": "string",
+    "required": true,
+    "description": "The target URL to snapshot"
+  },
+  "screenshot_options": {
+    "type": "object",
+    "required": false,
+    "default": {},
+    "description": "Screenshot style configuration parameters",
+    "properties": {
+      "full_page": {
+        "type": "boolean",
+        "required": false,
+        "default": false,
+        "description": "When set to true, captures the entire scrollable page instead of just the current visible viewport"
+      },
+      "type": {
+        "type": "string",
+        "required": false,
+        "default": "png",
+        "description": "Set the image format",
+        "options": ["png", "jpeg"]
+      },
+      "clip": {
+        "type": "object",
+        "required": false,
+        "default": {},
+        "description": "Crop screenshot parameters",
+        "properties": {
+          "height": {
+            "type": "integer",
+            "required": false,
+            "description": "Height of the cropped image"
+          },
+          "width": {
+            "type": "integer",
+            "required": false,
+            "description": "Width of the cropped image"
+          },
+          "x": {
+            "type": "integer",
+            "required": false,
+            "description": "X coordinate of the crop starting point"
+          },
+          "y": {
+            "type": "integer",
+            "required": false,
+            "description": "Y coordinate of the crop starting point"
+          }
+        }
+      }
+    }
+  },
+  "wait_for_timeout": {
+    "type": "integer",
+    "required": false,
+    "default": 10,
+    "description": "Timeout in seconds to wait for actions after page rendering (e.g., HTML extraction, screenshot). Maximum 60 seconds."
+  }
+}
+```
+*Note: This API supports the same optional parameters as the Content API, including: `goto_options`, `wait_for_selector`, `user_agent`, `is_disable_javascript`, `fingerprint`.*
+
+**Example Request:**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/snapshot \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com"
+  }'
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "result": {
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+    "content": "<!DOCTYPE html><html><head><title>Example Domain</title>...</html>"
+  },
+  "context": {
+    "status_code": 200,
+    "title": "Example Domain"
+  },
+  "errors": []
+}
+```
+
+**Response Fields:**
+- **success** (boolean): Indicates whether the request was successful
+- **result** (object): Complete snapshot data
+  - **screenshot** (string): Screenshot image encoded as a base64 string
+  - **content** (string): Full HTML content of the webpage
+- **context** (object): Additional metadata about the request
+  - **status_code** (integer): HTTP status code of the target webpage
+  - **title** (string): The page title extracted from the HTML
+- **errors** (array): List of error messages (empty on success)
+
+**Notes:**
+- Combines functionality of screenshot, content, and markdown APIs in a single request
+- Provides a comprehensive view of the webpage at a specific point in time
+- More efficient than making three separate API calls
+- Ideal for complete webpage archival and analysis
+
+---
+
+### 6. PDF API - Convert Webpage to PDF
+
+**Endpoint:** `POST https://api.notifyhub.example.com/v1/pdf`
+
+**Purpose:** Access a specified URL and convert the webpage to PDF format.
+
+**Best for:**
+- Creating printable versions of web content
+- Archiving web pages in a portable format
+- Generating reports from web data
+
+**Method:** POST
+
+**Authorization:** Header-based API token
+
+**Headers:**
+- **api-token** (required): Your API authentication token
+- **Content-Type** (required): `application/json`
+
+**Request Body Schema:**
+```json
+{
+  "url": {
+    "type": "string",
+    "required": true,
+    "description": "The target URL to convert to PDF"
+  },
+  "pdf_options": {
+    "type": "object",
+    "required": false,
+    "default": {},
+    "description": "PDF conversion configuration parameters",
+    "properties": {
+      "format": {
+        "type": "string",
+        "required": false,
+        "default": "Letter",
+        "description": "Page paper format such as Letter, A0, A1, A2, A3, A4, etc."
+      },
+      "height": {
+        "type": "integer",
+        "required": false,
+        "description": "Custom paper height"
+      },
+      "width": {
+        "type": "integer",
+        "required": false,
+        "description": "Custom paper width"
+      },
+      "landscape": {
+        "type": "boolean",
+        "required": false,
+        "default": false,
+        "description": "Whether to use landscape orientation"
+      },
+      "print_background": {
+        "type": "boolean",
+        "required": false,
+        "default": false,
+        "description": "Print background graphics"
+      },
+      "scale": {
+        "type": "number",
+        "required": false,
+        "default": 1.0,
+        "description": "Scale factor for rendering the webpage"
+      },
+      "margin": {
+        "type": "object",
+        "required": false,
+        "default": {},
+        "description": "Set PDF margins",
+        "properties": {
+          "top": {
+            "type": "integer",
+            "required": false,
+            "description": "Top margin"
+          },
+          "bottom": {
+            "type": "integer",
+            "required": false,
+            "description": "Bottom margin"
+          },
+          "left": {
+            "type": "integer",
+            "required": false,
+            "description": "Left margin"
+          },
+          "right": {
+            "type": "integer",
+            "required": false,
+            "description": "Right margin"
+          }
+        }
+      }
+    }
+  },
+  "wait_for_timeout": {
+    "type": "integer",
+    "required": false,
+    "default": 10,
+    "description": "Timeout in seconds to wait for actions after page rendering (e.g., HTML extraction, screenshot). Maximum 60 seconds."
+  }
+}
+```
+*Note: This API supports the same optional parameters as the Content API, including: `goto_options`, `wait_for_selector`, `user_agent`, `is_disable_javascript`, `fingerprint`.*
+
+**Example Request:**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/pdf \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com"
+  }'
+```
+
+**Success Response:**
+```
+HTTP/1.1 200 OK
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="page.pdf"
+
+[Binary PDF Data Stream]
+```
+
+**Response Format:**
+- **Content-Type**: `application/octet-stream` (binary data stream)
+- **Response Body**: Direct binary PDF data (not JSON, not base64)
+- The response is the PDF file itself, ready to be saved directly
+
+**Notes:**
+- Unlike other NotifyHub APIs, the PDF API returns **binary PDF data directly**, not JSON
+- Simply save the response body to a `.pdf` file
+- Preserves layout and styling from the original webpage
+- Useful for creating printable versions or archival copies of web pages
+---
+
+### 7. JSON API - AI-Powered Structured Data Extraction <span class="beta">BETA</span>
+
+**Endpoint:** `POST https://api.notifyhub.example.com/v1/json`
+
+**Purpose:** Use AI to process webpage content and return structured JSON data based on user-defined prompts or schema.
+
+**Best for:**
+- Extracting specific data from web pages using natural language prompts
+- Converting unstructured web content into structured JSON format
+- Automating data collection with AI-guided extraction
+- Building web scraping solutions with flexible output schemas
+
+**Method:** POST
+
+**Authorization:** Header-based API token
+
+**Headers:**
+- **api-token** (required): Your API authentication token
+- **Content-Type** (required): `application/json`
+
+**Request Body Schema:**
+```json
+{
+  "url": {
+    "type": "string",
+    "required": true,
+    "description": "The target URL to process and extract data from"
+  },
+  "wait_for_timeout": {
+    "type": "integer",
+    "required": false,
+    "default": 10,
+    "description": "Timeout in seconds to wait for page rendering. Maximum 60 seconds."
+  },
+  "prompt": {
+    "type": "string",
+    "required": false,
+    "description": "Natural language instruction describing what data to extract. Either 'prompt' or 'response_format' must be provided."
+  },
+  "response_format": {
+    "type": "object",
+    "required": false,
+    "description": "Define the structure of the output JSON data",
+    "properties": {
+      "type": {
+        "type": "string",
+        "required": true,
+        "default": "json_schema",
+        "description": "Must be set to 'json_schema'"
+      },
+      "schema": {
+        "type": "object",
+        "required": true,
+        "description": "JSON Schema definition for the output structure. Follows standard JSON Schema specification (https://json-schema.org/)"
+      }
+    }
+  }
+}
+```
+*Note: This API supports the same optional parameters as the Content API, including: `goto_options`, `wait_for_selector`, `user_agent`, `is_disable_javascript`, `fingerprint`.*
+
+**Example Request 1 (Using Prompt):**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/json \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://www.qq.com",
+    "prompt": "Extract news from the Hot Topics section"
+  }'
+```
+
+**Example Request 2 (Using Response Format):**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/json \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://www.qq.com",
+    "response_format": {
+      "type": "json_schema",
+      "schema": {
+        "title": "Hot Topics News",
+        "description": "News articles from hot topics section",
+        "type": "object",
+        "properties": {
+          "hotspot_news": {
+            "type": "array",
+            "description": "List of news articles",
+            "items": {
+              "type": "object",
+              "required": ["publish_time", "summary", "title", "url"],
+              "properties": {
+                "publish_time": {
+                  "type": "string",
+                  "description": "Publication time (relative, e.g., 1 hour ago)"
+                },
+                "summary": {
+                  "type": "string",
+                  "description": "News summary/snippet"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "News title"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "News article URL"
+                }
+              }
+            }
+          }
+        },
+        "required": ["hotspot_news"]
+      }
+    }
+  }'
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "result": {
+    "hotspot_news": [
+      {
+        "publish_time": "1 hour ago",
+        "summary": "Breaking news summary here",
+        "title": "Breaking News Title",
+        "url": "https://news.example.com/article1"
+      },
+      {
+        "publish_time": "2 hours ago",
+        "summary": "Another news summary",
+        "title": "Another News Title",
+        "url": "https://news.example.com/article2"
+      }
+    ]
+  },
+  "context": {
+    "status_code": 200,
+    "title": "Example News Site"
+  },
+  "errors": []
+}
+```
+
+**Response Fields:**
+- **success** (boolean): Indicates whether the request was successful
+- **result** (object): Structured JSON data extracted from the webpage according to the prompt or schema
+- **context** (object): Additional metadata about the request
+  - **status_code** (integer): HTTP status code of the target webpage
+  - **title** (string): The page title extracted from the HTML
+- **errors** (array): List of error messages (empty on success)
+
+**Notes:**
+- This API is currently in **BETA** testing phase
+- Either `prompt` or `response_format` must be provided (not both)
+- When using `prompt`, describe in natural language what data you want to extract
+- When using `response_format`, provide a detailed JSON Schema to ensure consistent output structure
+- The AI model processes the webpage content and extracts data according to your specifications
+- Particularly useful for dynamic websites where data structure may vary
+- Supports all base parameters from the Content API for fine-tuned page rendering control
+
+---
+
+## Search APIs
+
+### 8. SERP API - Get Search Engine Results
+
+**Endpoint:** `POST https://api.notifyhub.example.com/v1/serp`
+
+**Purpose:** Retrieve search engine results page (SERP) for a given keyword query.
+
+**Best for:**
+- Implementing search functionality in applications
+- Gathering competitive intelligence
+- Research and data collection
+
+**Method:** POST
+
+**Authorization:** Header-based API token
+
+**Headers:**
+- **api-token** (required): Your API authentication token
+- **Content-Type** (required): `application/json`
+
+**Request Body Schema:**
+```json
+{
+  "query_keyword": {
+    "type": "string",
+    "required": true,
+    "description": "Search keyword (e.g., 'artificial intelligence')"
+  },
+  "country_code": {
+    "type": "string",
+    "required": false,
+    "default": "cn",
+    "description": "Country/region code (e.g., 'us', 'cn', 'jp')"
+  },
+  "language_code": {
+    "type": "string",
+    "required": false,
+    "default": "zh-CN",
+    "description": "Language code (e.g., 'en', 'zh-CN', 'ja')"
+  },
+  "result_shift": {
+    "type": "integer",
+    "required": false,
+    "default": 0,
+    "description": "Result offset to skip a specified number of results"
+  }
+}
+```
+
+**Example Request:**
+```bash
+curl -X POST https://api.notifyhub.example.com/v1/serp \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query_keyword": "artificial intelligence",
+    "country_code": "us",
+    "language_code": "en"
+  }'
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "result": [
+    {
+      "content": "",
+      "description": "Artificial intelligence (AI), in its broadest sense, is intelligence exhibited by machines, particularly computer systems. It is a field of research in computer science that develops and studies methods and software that enable machines to perceive their environment and uses learning and intelligence to take actions...",
+      "title": "Artificial intelligence - Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    {
+      "content": "",
+      "description": "Artificial intelligence leverages computers and machines to mimic the problem-solving and decision-making capabilities of the human mind. Learn about AI types, applications, and ethical concerns in this comprehensive guide.",
+      "title": "What is Artificial Intelligence (AI)? | IBM",
+      "url": "https://www.ibm.com/topics/artificial-intelligence"
+    },
+    {
+      "content": "",
+      "description": "Artificial intelligence is the simulation of human intelligence processes by machines, especially computer systems. Learn about AI applications including expert systems, natural language processing, speech recognition and machine vision.",
+      "title": "What is AI? Learn about artificial intelligence | Google Cloud",
+      "url": "https://cloud.google.com/learn/what-is-artificial-intelligence"
+    }
+  ],
+  "context": {
+    "status_code": 200,
+    "title": ""
+  },
+  "errors": []
+}
+```
+
+**Response Fields:**
+- **success** (boolean): Indicates whether the request was successful
+- **result** (array): List of search results
+  - **content** (string): Additional content for the search result (usually empty)
+  - **description** (string): Description/snippet text from the search result
+  - **title** (string): Title of the search result
+  - **url** (string): URL of the search result
+- **context** (object): Additional metadata about the request
+  - **status_code** (integer): HTTP status code
+  - **title** (string): Page title (usually empty for search results)
+- **errors** (array): List of error messages (empty on success)
+
+**Notes:**
+- Supports multiple countries and languages
+- Use `result_shift` for pagination of search results
+- Returns structured search results from the search engine
+- The structure of results may vary depending on the search query and search engine response
+
+---
+
+## Error Handling
+
+NotifyHub API uses standard HTTP status codes to indicate request outcomes. All responses follow a unified JSON format.
+
+### HTTP Status Codes
+
+#### 1. HTTP 200 - Success
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "result": "...",
+  "context": {
+    "status_code": 200,
+    "title": "Example Domain"
+  },
+  "errors": []
+}
+```
+
+**Description:** Request completed successfully. The `success` field is `true` and the `result` field contains the requested data.
+
+---
+
+#### 2. HTTP 400 - Parameter Error
+
+**Example Response:**
+```json
+{
+  "success": false,
+  "result": "",
+  "context": {},
+  "errors": ["Parameter error: url field cannot be empty"]
+}
+```
+
+**Common Causes:**
+- Missing required parameters (e.g., `url`)
+- Invalid parameter types
+- Parameter values out of valid range
+
+**Resolution:** Check the `errors` array for specific parameter issues and correct your request.
+
+---
+
+#### 3. HTTP 422 - Request Failed
+
+**Example Response:**
+```json
+{
+  "success": false,
+  "result": "",
+  "context": {},
+  "errors": ["Webpage access failed: connection timeout"]
+}
+```
+
+**Common Causes:**
+- Target URL is unreachable
+- Network timeout
+- Target server returned an error
+- Page rendering failed
+
+**Resolution:** 
+- Verify the target URL is accessible
+- Increase `wait_for_timeout` if the page is slow to load
+- Check if the target website blocks automated access
+
+---
+
+#### 4. HTTP 429 - Rate Limit Exceeded
+
+**Example Response:**
+```json
+{
+  "success": false,
+  "result": "",
+  "context": {},
+  "errors": ["Too many requests, please try again later"]
+}
+```
+
+**Common Causes:**
+- Exceeded rate limit for your API token
+- Too many concurrent requests
+
+**Resolution:**
+- Implement exponential backoff retry logic
+- Reduce request frequency
+- Contact NotifyHub team for higher rate limits if needed
+
+---
+
+## Advanced Integration
+
+### MCP (Model Context Protocol) Integration
+
+NotifyHub provides two types of MCP integration for different use cases:
+
+#### 1. Reader MCP - Webpage Content Retrieval
+
+**Purpose:** Retrieve and parse webpage content for AI models.
+
+**Quick Setup for Cursor IDE:**
+
+Add the following configuration to your MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "NotifyHub": {
+      "url": "https://api.notifyhub.example.com/webhook/sse",
+      "timeout": 300000
+    }
+  }
+}
+```
+
+**Capabilities:**
+- Parse webpage content and return structured data
+- Convert webpages to JSON format for AI consumption
+- Extract specific information from web pages
+
+**Best for:**
+- Reading and understanding webpage content
+- Extracting data without interaction
+- Content analysis and summarization
+
+---
+
+#### 2. Browser Operation MCP - Interactive Browser Automation (NEW)
+
+**Purpose:** Perform browser automation tasks through MCP protocol, enabling AI agents to interact with webpages like a human user.
+
+**Quick Setup for Cursor IDE:**
+
+Add the following configuration to your MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "notifyhub-action-server": {
+      "url": "https://api.notifyhub.example.com/sdk/sse"
+    }
+  }
+}
+```
+
+**Configuration Steps:**
+1. Open Cursor → Preferences → Cursor Settings → Tools & MCP
+2. Add the `notifyhub-action-server` configuration
+3. Save and restart Cursor
+4. Verify the server shows "24 tools enabled"
+
+**Documentation:**
+- Full documentation: https://docs.notifyhub.example.com
+- Contact: jonwu / charliecai for access and support
+
+---
+
+**Integration Benefits:**
+- Seamless integration with AI workflows
+- Direct webpage access from AI models
+- Simplified context gathering for LLMs
+- Enable AI agents to perform complex web tasks
+- No manual scripting required for automation
+
+---
+
+## Best Practices
+
+### Performance Optimization
+1. **Optimize Timeouts:** Set appropriate `wait_for_timeout` values based on target webpage complexity
+2. **Use Markdown API:** When feeding content to LLMs, prefer the markdown endpoint for cleaner, more structured data
+
+### Security
+1. **Token Management:** Store API tokens in environment variables, never in source code
+2. **Backend Proxy:** Route NotifyHub API calls through your backend to avoid exposing tokens
+3. **Rate Limiting:** Implement client-side rate limiting to avoid hitting API limits
+
+### Reliability
+1. **Error Handling:** Always check the `success` field before processing results
+2. **Retry Logic:** Implement exponential backoff for transient failures (HTTP 422, 429)
+3. **Timeout Handling:** Set reasonable timeout values to balance completeness and response time
+
+### Content Processing
+1. **Clean HTML:** Use `exclude_tags` to remove unwanted elements like scripts or styles
+2. **Wait for Selectors:** Use `wait_for_selector` for precise control over dynamic content loading
+3. **Custom Headers:** Set `user_agent` and `extra_http_headers` when accessing sites with specific requirements

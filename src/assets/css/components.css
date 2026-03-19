@@ -1,0 +1,217 @@
+/* ===================================
+   通用组件样式
+   =================================== */
+
+/* 按钮样式 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition, all 0.3s ease);
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #006EFF 0%, #6366f1 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(0, 110, 255, 0.3);
+}
+
+/* 光泽扫光动画 */
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.5s ease;
+}
+
+.btn-primary:hover::after {
+    left: 150%;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #3d8eff 0%, #818cf8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 110, 255, 0.45);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #fff;
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: #006EFF;
+    border-color: #006EFF;
+}
+
+.btn-outline:hover {
+    background: linear-gradient(135deg, #006EFF 0%, #6366f1 100%);
+    border-color: transparent;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 110, 255, 0.35);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #006EFF;
+    box-shadow: 0 0 0 3px rgba(0, 110, 255, 0.1);
+}
+
+/* 卡片样式 */
+.card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--card-radius, 16px);
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 110, 255, 0.08), 0 1px 3px rgba(0,0,0,0.05);
+    transition: var(--transition, all 0.3s ease);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(0, 110, 255, 0.15), 0 4px 12px rgba(0,0,0,0.05);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* 代码块样式 */
+code {
+    background: #f1f5f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #0052CC;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;  /* 横向滚动 */
+    overflow-y: hidden;  /* 防止垂直滚动 */
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-width: 100%;  /* 不超过父容器 */
+    width: 100%;  /* 占满父容器宽度 */
+    box-sizing: border-box;  /* padding 计算在宽度内 */
+    white-space: pre;  /* 保持代码格式 */
+    word-wrap: normal;  /* 不自动换行 */
+}
+
+pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+}
+
+/* 页面标题样式 */
+.page-header {
+    padding: 120px 0 60px;
+    background: linear-gradient(135deg, #006EFF 0%, #4f52d8 50%, #6366f1 100%);
+    color: #fff;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 20%, rgba(255,255,255,0.08) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+.page-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.page-description {
+    font-size: 1.25rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* 章节标题样式 */
+.section-header {
+    text-align: center;
+    margin-bottom: 0.8rem;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.section-description {
+    font-size: 1rem;
+    color: #6b7280;
+    max-width: 600px;
+    margin: 0 auto;
+}
+

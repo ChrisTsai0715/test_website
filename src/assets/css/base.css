@@ -1,0 +1,64 @@
+/* ===================================
+   基础样式和重置
+   =================================== */
+
+/* CSS 变量 */
+:root {
+    --primary: #006EFF;
+    --primary-dark: #0052CC;
+    --primary-light: #3d8eff;
+    --accent: #6366f1;
+    --accent-light: #818cf8;
+    --gradient-primary: linear-gradient(135deg, #006EFF 0%, #6366f1 100%);
+    --gradient-hero: linear-gradient(135deg, #e8f0ff 0%, #f0edff 50%, #e8f4ff 100%);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px rgba(0, 110, 255, 0.12);
+    --card-radius: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 重置样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基础样式 */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'PingFang SC', 'Source Han Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    line-height: 1.6;
+    color: #1f2937;
+    background-color: #eef2ff;
+    background-image:
+        radial-gradient(ellipse at 15% 40%, rgba(99, 102, 241, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 15%, rgba(0, 110, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 90%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    background-attachment: fixed;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 覆盖 Element Plus 主题色 */
+:root {
+    --el-color-primary: #006EFF;
+    --el-color-primary-light-3: #4d97ff;
+    --el-color-primary-light-5: #80b7ff;
+    --el-color-primary-light-7: #b3d4ff;
+    --el-color-primary-light-8: #cce2ff;
+    --el-color-primary-light-9: #e6f0ff;
+    --el-color-primary-dark-2: #0058cc;
+    --el-border-radius-base: 8px;
+    --el-border-radius-small: 6px;
+}
+
+

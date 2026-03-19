@@ -1,0 +1,934 @@
+/* API文档共享样式 */
+
+/* API文档页面布局 */
+.api-docs {
+    padding-top: 70px;
+}
+
+.docs-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 70px);
+    max-width: 1400px;  /* 与导航栏保持一致 */
+    width: 100%;  /* 重要：允许容器在小屏幕上自适应缩小 */
+    margin: 0 auto;
+    padding: 0 20px;  /* 左右留白，避免内容贴边 */
+    box-sizing: border-box;  /* padding 计算在 width 内 */
+}
+
+.docs-sidebar {
+    background: #f8fafc;
+    border-right: 1px solid #e5e7eb;
+    position: sticky;
+    top: 70px;
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+}
+
+.sidebar-content {
+    padding: 2rem;
+}
+
+.sidebar-content h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+}
+
+/* 搜索框样式 */
+.sidebar-search {
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-search .search-input {
+    position: relative;
+}
+
+.sidebar-search .search-input input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+}
+
+.sidebar-search .search-input input:focus {
+    outline: none;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+}
+
+.sidebar-search .search-info {
+    position: absolute;
+    right: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #007bff;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 搜索高亮样式 */
+.search-highlight {
+    background-color: #ffeb3b;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.search-highlight.current {
+    background-color: #ff9800;
+    color: white;
+    animation: pulse 1s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.docs-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.docs-nav > ul > li {
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
+}
+
+.docs-nav .nav-item {
+    display: block;
+    padding: 0.75rem 1rem !important;
+    color: #6b7280;
+    text-decoration: none;
+    border-radius: 0;
+    margin: 0.25rem 0 !important;
+    transition: all 0.3s ease;
+    line-height: 1.5;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+/* 第一层子项（在nav-sublist中的nav-item，如各个接口） */
+.docs-nav .nav-sublist > li > .nav-item {
+    font-size: 0.9rem;
+}
+
+/* 第二层子项（嵌套的nav-sublist中的nav-item） */
+.docs-nav .nav-sublist .nav-sublist > li > .nav-item {
+    font-size: 0.85rem;
+}
+
+.docs-nav .nav-item:hover {
+    background: #f1f5f9;
+    color: #006EFF;
+}
+
+.docs-nav .nav-item.active {
+    color: #006EFF;
+    font-weight: normal;
+}
+
+.docs-nav .nav-group {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.docs-nav .nav-group-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem !important;
+    color: #6b7280;
+    font-weight: normal;
+    font-size: 1rem;
+    border-bottom: none;
+    margin: 0.25rem 0 !important;
+    cursor: pointer;
+    border-radius: 0;
+    line-height: 1.5;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* 第一层子项（在nav-sublist中的nav-group-title，如"读取器API"） */
+.docs-nav .nav-sublist > .nav-group > .nav-group-title {
+    font-size: 0.95rem;
+}
+
+/* 第二层子项（嵌套的nav-sublist中的nav-group-title） */
+.docs-nav .nav-sublist .nav-sublist > .nav-group > .nav-group-title {
+    font-size: 0.9rem;
+}
+
+/* 为nav-group-title添加连接线（在nav-sublist中的） */
+.docs-nav .nav-sublist > .nav-group > .nav-group-title::before {
+    content: '';
+    position: absolute;
+    left: -0.75rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 1px;
+    background-color: #e5e7eb;
+    transform: translateY(-50%);
+}
+
+/* 确保nav-group在nav-sublist中有正确的定位 */
+.docs-nav .nav-sublist > .nav-group {
+    position: relative;
+}
+
+.docs-nav .nav-group-title .nav-group-text {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.4rem;
+    line-height: 1.5;
+}
+
+.docs-nav .nav-group-title .toggle-icon {
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+    color: #64748b;
+    margin-left: auto;
+}
+
+.docs-nav .nav-group-title.collapsible .toggle-icon {
+    transform: rotate(0deg);
+}
+
+.docs-nav .nav-group-title.collapsible.expanded .toggle-icon {
+    transform: rotate(90deg);
+}
+
+.docs-nav .nav-sublist {
+    padding-left: 0;
+    list-style: none;
+    margin-top: 0.125rem;
+    margin-left: 0.5rem;
+    border-left: 1px solid #e5e7eb;
+    padding-left: 0.75rem;
+}
+
+/* 第一层子项（如：读取器API下的接口） */
+.docs-nav .nav-sublist .nav-item {
+    margin-left: 0;
+    padding: 0.5rem 1rem 0.5rem 1.5rem;
+    border-left: 2px solid transparent;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    line-height: 1.4;
+    word-break: break-word;
+    text-decoration: none;
+    color: #6b7280;
+}
+
+/* 接口路径代码标签样式 */
+.docs-nav .nav-sublist .nav-item code {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #006EFF;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    white-space: nowrap;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+/* 接口描述文字样式 */
+.docs-nav .nav-sublist .nav-item .nav-item-desc {
+    display: block;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    line-height: 1.3;
+    margin-top: 0.125rem;
+}
+
+/* 悬停和激活状态 */
+.docs-nav .nav-sublist .nav-item:hover {
+    background: #f1f5f9;
+    border-left-color: #006EFF;
+}
+
+.docs-nav .nav-sublist .nav-item:hover code {
+    color: #006EFF;
+}
+
+.docs-nav .nav-sublist .nav-item:hover .nav-item-desc {
+    color: #6b7280;
+}
+
+.docs-nav .nav-sublist .nav-item.active {
+    background: transparent;
+    border-left-color: #006EFF;
+}
+
+.docs-nav .nav-sublist .nav-item.active code {
+    color: #006EFF;
+    font-weight: 700;
+}
+
+.docs-nav .nav-sublist .nav-item.active .nav-item-desc {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* 第二层子项（嵌套的nav-sublist中的项） */
+.docs-nav .nav-sublist .nav-sublist {
+    margin-left: 1.5rem;
+    border-left: 1px solid #e5e7eb;
+    padding-left: 0.75rem;
+}
+
+.docs-nav .nav-sublist .nav-sublist .nav-item {
+    padding-left: 1.5rem;
+}
+
+/* 添加连接线指示器 */
+.docs-nav .nav-sublist .nav-item::before {
+    content: '';
+    position: absolute;
+    left: -0.75rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 1px;
+    background-color: #e5e7eb;
+    transform: translateY(-50%);
+}
+
+.docs-nav .nav-sublist .nav-item:hover {
+    background: #f1f5f9;
+    color: #006EFF;
+    border-left-color: #006EFF;
+}
+
+.docs-nav .nav-sublist .nav-item:hover::before {
+    background-color: #006EFF;
+}
+
+.docs-nav .nav-sublist .nav-item.active {
+    background: transparent;
+    color: #006EFF;
+    font-weight: 600;
+    border-left-color: #006EFF;
+}
+
+.docs-nav .nav-sublist .nav-item.active::before {
+    background-color: #006EFF;
+}
+
+.docs-content {
+    padding: 2rem 3rem;
+    max-width: 100%;  /* 不超过网格分配的宽度 */
+    overflow-x: hidden;  /* 防止内容横向溢出 */
+    box-sizing: border-box;  /* padding 计算在宽度内 */
+}
+
+.docs-section {
+    margin-bottom: 4rem;
+    max-width: 100%;  /* 不超过父容器 */
+    overflow-x: hidden;  /* 防止子元素溢出 */
+    /* 锚点跳转偏移，避免被导航栏遮挡 */
+    scroll-margin-top: 100px;
+}
+
+/* 确保所有代码块和其他内容不会溢出 */
+.docs-section pre,
+.docs-section table,
+.docs-section img,
+.docs-section .api-endpoint,
+.docs-section .code-example {
+    max-width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+.docs-section h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.docs-section h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.docs-section h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 1.5rem 0 1rem;
+}
+
+.docs-section h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 1rem 0 0.5rem;
+}
+
+/* 标签页样式 */
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+.params-tab-pane {
+  display: none;
+}
+
+.params-tab-pane.active {
+  display: block;
+}
+
+/* 可展开行样式 */
+.expandable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.expandable-row:hover {
+  background-color: #f8fafc;
+}
+
+.expandable-param {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expand-icon {
+  transition: transform 0.2s ease;
+  font-size: 0.8rem;
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.expand-content {
+  background-color: #f8fafc;
+}
+
+/* 参数表格样式 */
+.params-table {
+  width: 100%;
+  margin: 1.5rem 0;
+  overflow-x: auto;  /* 允许横向滚动 */
+  max-width: 100%;  /* 不超过父容器 */
+}
+
+.params-table table {
+  width: 100%;
+  min-width: 800px;  /* 最小宽度，确保表格不会太窄 */
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.params-table thead {
+  background: #f8fafc;
+}
+
+.params-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  font-size: 0.95rem;
+}
+
+.params-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.9rem;
+  vertical-align: top;
+}
+
+.params-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.params-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* 表格中的代码标签 */
+.params-table code {
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #0052CC;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  white-space: nowrap;
+}
+
+/* 嵌套参数样式 */
+.nested-params {
+  padding: 1rem;
+}
+
+.nested-params h5,
+.nested-params h6 {
+  margin: 0 0 1rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.nested-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+.nested-table th,
+.nested-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.nested-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* 代码标签页样式 */
+.code-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tab-button {
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.tab-button:hover:not(.disabled) {
+  color: #2563eb;
+}
+
+.tab-button.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.tab-button.disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* 参数标签页样式 */
+.params-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* 警告框样式 */
+.warning-box {
+  display: flex;
+  gap: 1rem;
+  background: #fef3c7;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid #f59e0b;
+}
+
+.warning-box i {
+  color: #f59e0b;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+.warning-box p {
+  margin: 0;
+  color: #92400e;
+}
+
+/* API端点样式 */
+.api-endpoint {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid #2563eb;
+}
+
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.method {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.method.post {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.path {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 1.1rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.endpoint-desc {
+  color: #64748b;
+  margin: 0;
+  font-style: italic;
+}
+
+/* 状态码样式 */
+.status-codes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.status-code {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.code {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  min-width: 60px;
+  text-align: center;
+}
+
+.code.success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.code.client-error {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.code.server-error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.description {
+  color: #374151;
+}
+
+/* MCP功能样式 */
+.mcp-features ul {
+  list-style: none;
+  padding: 0;
+}
+
+.mcp-features li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+  padding-left: 2rem;
+}
+
+.mcp-features li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.mcp-features li:last-child {
+  border-bottom: none;
+}
+
+/* 认证说明样式 */
+.auth-notes {
+  margin-top: 1.5rem;
+}
+
+.auth-notes ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.auth-notes li {
+  margin: 0.5rem 0;
+  color: #64748b;
+}
+
+/* 即将推出样式 */
+.coming-soon {
+  background: #f0f9ff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid #0ea5e9;
+}
+
+.coming-soon h3 {
+  color: #0c4a6e;
+  margin-top: 0;
+}
+
+.coming-soon ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.coming-soon li {
+  margin: 0.5rem 0;
+  color: #0369a1;
+}
+
+/* 占位符内容样式 */
+.placeholder-content {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #007bff;
+  margin: 20px 0;
+  font-style: italic;
+  color: #6c757d;
+}
+
+/* 导航折叠样式 */
+.nav-sublist {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  max-height: 1000px;
+  opacity: 1;
+  margin-top: 0.125rem;
+}
+
+.nav-sublist.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  overflow: hidden;
+}
+
+.nav-group-title.collapsible {
+  cursor: pointer;
+  user-select: none;
+}
+
+.nav-group-title.collapsible:hover {
+  background-color: #f8fafc;
+}
+
+.toggle-icon {
+  transition: all 0.3s ease;
+}
+
+/* 子分组样式（如"读取器"、"浏览器操作"） */
+.nav-subgroup {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.nav-subgroup-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1rem !important;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-bottom: none;
+  margin: 0.2rem 0 !important;
+  cursor: pointer;
+  border-radius: 0;
+  line-height: 1.5;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.nav-subgroup-title:hover {
+  background-color: #f8fafc;
+}
+
+.nav-subgroup-title .nav-subgroup-text {
+  flex: 1;
+}
+
+.nav-subgroup-title .toggle-icon-small {
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+  color: #64748b;
+  margin-left: auto;
+}
+
+/* 子子列表样式（子分组下的项目列表） */
+.nav-subsublist {
+  padding-left: 0;
+  list-style: none;
+  margin-top: 0.125rem;
+  margin-left: 1rem;
+  border-left: 1px solid #e5e7eb;
+  padding-left: 0.75rem;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.nav-subsublist.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  overflow: hidden;
+}
+
+.nav-subsublist .nav-item {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.85rem;
+}
+
+/* 内测中徽章样式 */
+.beta-badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: #fff;
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    border-radius: 10px;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    line-height: 1.1;
+    box-shadow: 0 1px 3px rgba(107, 114, 128, 0.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+    flex-grow: 0;
+    width: auto;
+}
+
+/* 导航标识项样式 */
+.nav-badges-item {
+    padding: 0.5rem 1rem 0.5rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    list-style: none;
+}
+
+.nav-badges-item .new-badge,
+.nav-badges-item .beta-badge {
+    margin-left: 0;
+}
+
+/* NEW徽章样式 */
+.new-badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 10px;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    line-height: 1.1;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+    flex-grow: 0;
+    width: auto;
+    animation: newPulse 2s ease-in-out infinite;
+}
+
+/* 在导航组标题中让第一个标签换到新行 */
+.nav-group-text .new-badge::before {
+    content: '';
+    flex-basis: 100%;
+    height: 0;
+}
+
+.nav-group-text .new-badge {
+    margin-left: 0;
+}
+
+/* 第二个标签跟在第一个标签后面 */
+.nav-group-text .beta-badge {
+    margin-left: 0;
+}
+
+@keyframes newPulse {
+    0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.85;
+        transform: scale(1.05);
+    }
+}
