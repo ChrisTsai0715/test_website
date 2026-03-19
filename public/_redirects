@@ -1,6 +1,0 @@
-/robots.txt /robots.txt 200
-/sitemap.xml /sitemap.xml 200
-/config.js /config.js 200
-/img/* /img/:splat 200
-/assets/* /assets/:splat 200
-/* /index.html 200
