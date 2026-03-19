@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NotifyHub API 文档 - 完整内容</title>
+  <meta name="description" content="NotifyHub 一站式消息通知服务 API 文档，支持短信、邮件、Push推送、语音通知、批量多渠道发送，提供 HTTP API、Serverless、Webhook、SDK 多种接入方式">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; line-height: 1.6; }
+    h1 { color: #006EFF; }
+    h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; margin-top: 2.5rem; }
+    h3 { color: #34495e; margin-top: 1.5rem; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    pre { background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+    pre code { background: none; color: inherit; padding: 0; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th { background: #f8f9fa; text-align: left; padding: 8px 12px; border: 1px solid #dee2e6; }
+    td { padding: 8px 12px; border: 1px solid #dee2e6; }
+    .method { background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
+    .endpoint { font-weight: bold; color: #006EFF; }
+    .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 0.75rem 1rem; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+<h1>NotifyHub API 文档</h1>
+<p>NotifyHub 是一站式消息通知服务平台，提供统一的消息通知接口，支持短信、邮件、Push推送、语音等多种通知渠道。本文档涵盖所有 API 接口的详细说明。</p>
+
+<h2>快速开始</h2>
+<p>NotifyHub 提供统一的消息通知接口，支持短信、邮件、Push推送、语音等多种通知渠道。以下以短信API为例快速上手。</p>
+<h3>准备工作</h3>
+<ol>
+  <li>获取 <strong>api-token</strong>：联系接口人获取，使用时将 <code>YOUR_API_TOKEN</code> 替换为您的实际 Token。</li>
+  <li>安装 <strong>cURL工具</strong>：确保您的系统已安装 curl 命令行工具。</li>
+</ol>
+<h3>步骤1：发送请求</h3>
+<pre><code>curl -X POST https://api.notifyhub.example.com/v1/sms/send \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "+8613800138000",
+    "content": "您的验证码是：123456，5分钟内有效。"
+}'</code></pre>
+<h3>步骤2：处理响应</h3>
+<pre><code>{
+  "success": true,
+  "result": {
+    "message_id": "msg_abc123456",
+    "status": "queued"
+  },
+  "errors": []
+}</code></pre>
+
+<h2>身份认证</h2>
+<p>NotifyHub API 使用 api-token 进行身份认证。您需要在每个请求的 Header 中包含 api-token。</p>
+<pre><code>curl -X POST https://api.notifyhub.example.com/v1/sms/send \
+  -H "api-token: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"to": "+8613800138000", "content": "您的验证码是：123456"}'</code></pre>
+<ul>
+  <li>请妥善保管您的 api-token，不要在公开场合泄露</li>
+  <li>如果 api-token 泄露，请及时联系我们更换</li>
+  <li>所有 API 请求必须使用 HTTPS 协议</li>
+</ul>
+
+<h2>1. sms/send - 发送短信</h2>
+<p>向指定手机号发送短信通知，支持单发和批量发送。</p>
+<p><span class="method">POST</span> <span class="endpoint">/v1/sms/send</span></p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数名</th><th>类型</th><th>是否必填</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>to</code></td><td>string 或 Array&lt;string&gt;</td><td>是</td><td>接收方手机号，支持国际格式如 +8613800138000，批量发送时传入数组，最多 1000 个</td></tr>
+    <tr><td><code>content</code></td><td>string</td><td>否</td><td>短信内容，与 template_id 二选一</td></tr>
+    <tr><td><code>template_id</code></td><td>string</td><td>否</td><td>短信模板ID，与 content 二选一</td></tr>
+    <tr><td><code>template_params</code></td><td>Record&lt;string, string&gt;</td><td>否</td><td>模板变量，当使用 template_id 时传入对应的模板参数</td></tr>
+    <tr><td><code>channel</code></td><td>string</td><td>否</td><td>指定短信通道，可选值："default"（自动选择）、"marketing"（营销）、"transactional"（事务型）</td></tr>
+    <tr><td><code>callback_url</code></td><td>string</td><td>否</td><td>状态回调地址，消息状态变更时主动推送</td></tr>
+    <tr><td><code>extra</code></td><td>Record&lt;string, string&gt;</td><td>否</td><td>自定义扩展字段，会原样透传到回调通知中</td></tr>
+  </tbody>
+</table>
+
+<h2>2. email/send - 发送邮件</h2>
+<p>向指定邮箱地址发送邮件通知，支持 HTML 富文本和纯文本格式。</p>
+<p><span class="method">POST</span> <span class="endpoint">/v1/email/send</span></p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数</th><th>类型</th><th>是否必填</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>to</code></td><td>string 或 Array&lt;string&gt;</td><td>是</td><td>收件人邮箱地址，支持批量发送，最多 100 个</td></tr>
+    <tr><td><code>subject</code></td><td>string</td><td>是</td><td>邮件主题</td></tr>
+    <tr><td><code>html</code></td><td>string</td><td>否</td><td>HTML 格式邮件正文，与 text 至少填写一个</td></tr>
+    <tr><td><code>text</code></td><td>string</td><td>否</td><td>纯文本格式邮件正文，与 html 至少填写一个</td></tr>
+    <tr><td><code>from_name</code></td><td>string</td><td>否</td><td>发件人显示名称，默认值 "NotifyHub"</td></tr>
+    <tr><td><code>reply_to</code></td><td>string</td><td>否</td><td>回复邮箱地址</td></tr>
+    <tr><td><code>cc</code></td><td>Array&lt;string&gt;</td><td>否</td><td>抄送邮箱列表</td></tr>
+    <tr><td><code>bcc</code></td><td>Array&lt;string&gt;</td><td>否</td><td>密送邮箱列表</td></tr>
+    <tr><td><code>callback_url</code></td><td>string</td><td>否</td><td>状态回调地址</td></tr>
+  </tbody>
+</table>
+
+<h2>3. push/send - 发送Push通知</h2>
+<p>向指定设备或用户发送 App Push 推送通知，支持 iOS、Android 及鸿蒙平台。</p>
+<p><span class="method">POST</span> <span class="endpoint">/v1/push/send</span></p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数</th><th>类型</th><th>是否必填</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>to</code></td><td>string 或 Array&lt;string&gt;</td><td>是</td><td>目标用户ID或设备Token，支持批量，最多 1000 个</td></tr>
+    <tr><td><code>title</code></td><td>string</td><td>是</td><td>推送标题</td></tr>
+    <tr><td><code>body</code></td><td>string</td><td>是</td><td>推送正文内容</td></tr>
+    <tr><td><code>platform</code></td><td>string</td><td>否</td><td>目标平台，可选值："all"、"ios"、"android"、"harmony"，默认 "all"</td></tr>
+    <tr><td><code>data</code></td><td>Record&lt;string, string&gt;</td><td>否</td><td>自定义业务数据，随推送一起下发到客户端</td></tr>
+    <tr><td><code>push_options.badge</code></td><td>int</td><td>否</td><td>iOS 角标数字</td></tr>
+    <tr><td><code>push_options.sound</code></td><td>string</td><td>否</td><td>通知声音，"default" 为系统默认声音，"none" 为静音</td></tr>
+    <tr><td><code>push_options.ttl</code></td><td>int</td><td>否</td><td>消息存活时长（秒），超时未送达则丢弃，默认 86400</td></tr>
+  </tbody>
+</table>
+
+<h2>4. voice/call - 发送语音通知</h2>
+<p>向指定手机号发起语音电话通知，支持文本转语音（TTS）和预录音文件播报。</p>
+<p><span class="method">POST</span> <span class="endpoint">/v1/voice/call</span></p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数</th><th>类型</th><th>是否必填</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>to</code></td><td>string</td><td>是</td><td>接收方手机号，支持国际格式如 +8613800138000</td></tr>
+    <tr><td><code>tts_text</code></td><td>string</td><td>否</td><td>TTS 文本转语音内容，与 audio_url 二选一</td></tr>
+    <tr><td><code>audio_url</code></td><td>string</td><td>否</td><td>预录音频文件URL（支持 mp3/wav），与 tts_text 二选一</td></tr>
+    <tr><td><code>repeat</code></td><td>int</td><td>否</td><td>语音播报重复次数，取值范围 1-5，默认 1</td></tr>
+    <tr><td><code>tts_options.voice</code></td><td>string</td><td>否</td><td>语音类型，可选值："female"（女声）、"male"（男声）</td></tr>
+    <tr><td><code>tts_options.speed</code></td><td>float</td><td>否</td><td>语速倍率，取值范围 0.5-2.0，默认 1.0</td></tr>
+    <tr><td><code>tts_options.volume</code></td><td>int</td><td>否</td><td>音量大小，取值范围 0-10，默认 5</td></tr>
+  </tbody>
+</table>
+
+<h2>5. batch/send - 批量多渠道发送</h2>
+<p>在一次请求中同时向多个渠道（短信、邮件、Push）发送通知，支持按优先级自动降级。</p>
+<p><span class="method">POST</span> <span class="endpoint">/v1/batch/send</span></p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数</th><th>类型</th><th>是否必填</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>channels</code></td><td>Array&lt;string&gt;</td><td>是</td><td>要发送的渠道列表，按优先级排序，可选值："sms"、"email"、"push"、"voice"</td></tr>
+    <tr><td><code>fallback</code></td><td>bool</td><td>否</td><td>是否启用降级：true 时若高优先级渠道送达成功则跳过低优先级渠道，默认 false</td></tr>
+    <tr><td><code>sms</code></td><td>Object</td><td>否</td><td>短信发送参数，结构同 /v1/sms/send（channels 包含 "sms" 时必填）</td></tr>
+    <tr><td><code>email</code></td><td>Object</td><td>否</td><td>邮件发送参数，结构同 /v1/email/send（channels 包含 "email" 时必填）</td></tr>
+    <tr><td><code>push</code></td><td>Object</td><td>否</td><td>Push 发送参数，结构同 /v1/push/send（channels 包含 "push" 时必填）</td></tr>
+    <tr><td><code>voice</code></td><td>Object</td><td>否</td><td>语音发送参数，结构同 /v1/voice/call（channels 包含 "voice" 时必填）</td></tr>
+  </tbody>
+</table>
+
+<h2>6. message/status - 查询消息状态</h2>
+<p>根据消息ID查询消息的发送状态，支持查询短信、邮件、Push及语音的发送详情。</p>
+<p><span class="method">POST</span> <span class="endpoint">/v1/message/status</span></p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数</th><th>类型</th><th>是否必填</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>message_id</code></td><td>string</td><td>是</td><td>消息唯一ID，由发送接口返回</td></tr>
+    <tr><td><code>channel</code></td><td>string</td><td>否</td><td>消息渠道，可选值："sms"、"email"、"push"、"voice"。不填则自动识别</td></tr>
+  </tbody>
+</table>
+<p>消息状态说明：queued（排队中）、sent（已发送）、delivered（已送达）、failed（发送失败）、skipped（已跳过）</p>
+
+<h2>7. smart/notify - AI 智能通知（内测中）</h2>
+<p>根据用户画像和历史行为，由 AI 自动选择最佳通知渠道、时机和内容，提升通知触达率和转化率。</p>
+<p><span class="method">POST</span> <span class="endpoint">/v1/smart/notify</span></p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数名</th><th>类型</th><th>是否必填</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>user_id</code></td><td>string</td><td>是</td><td>目标用户ID，用于 AI 读取用户画像和历史行为</td></tr>
+    <tr><td><code>intent</code></td><td>string</td><td>是</td><td>通知意图描述，AI 根据此文本自动生成最适合的通知内容</td></tr>
+    <tr><td><code>priority</code></td><td>string</td><td>否</td><td>通知优先级，可选值："low"、"normal"、"high"、"urgent"。urgent 级别将忽略免打扰设置，默认 "normal"</td></tr>
+    <tr><td><code>user_preference.preferred_channels</code></td><td>Array&lt;string&gt;</td><td>否</td><td>偏好渠道列表，按优先级排序</td></tr>
+    <tr><td><code>user_preference.quiet_hours</code></td><td>struct</td><td>否</td><td>免打扰时段设置，包含 start、end、timezone 字段</td></tr>
+    <tr><td><code>user_preference.language</code></td><td>string</td><td>否</td><td>通知语言，影响 AI 内容生成，默认 "zh-CN"</td></tr>
+  </tbody>
+</table>
+
+<h2>8. template/list - 消息模板管理</h2>
+<p>创建、查询和管理消息模板，统一维护各渠道的通知内容。</p>
+<p><span class="method">POST</span> <span class="endpoint">/v1/template/list</span></p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数</th><th>类型</th><th>是否必填</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>channel</code></td><td>string</td><td>否</td><td>按渠道筛选，可选值："sms"、"email"、"push"、"voice"。不填则返回全部</td></tr>
+    <tr><td><code>status</code></td><td>string</td><td>否</td><td>按状态筛选，可选值："pending"（审核中）、"approved"（已通过）、"rejected"（已拒绝）</td></tr>
+    <tr><td><code>keyword</code></td><td>string</td><td>否</td><td>按模板名称或ID关键词搜索</td></tr>
+    <tr><td><code>page</code></td><td>int</td><td>否</td><td>页码，从 1 开始，默认 1</td></tr>
+    <tr><td><code>page_size</code></td><td>int</td><td>否</td><td>每页数量，最大值 100，默认 20</td></tr>
+  </tbody>
+</table>
+
+<h2>错误处理</h2>
+<p>NotifyHub API 使用标准的HTTP状态码来表示请求结果，所有响应都遵循统一的格式规范。</p>
+<table>
+  <thead><tr><th>HTTP 状态码</th><th>含义</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>200</td><td>请求成功</td><td>success 为 true 表示发送成功，errors 为空数组</td></tr>
+    <tr><td>400</td><td>参数错误</td><td>请求参数缺失或格式不正确，errors 中包含具体错误信息</td></tr>
+    <tr><td>401</td><td>认证失败</td><td>api-token 无效或已过期，请检查 Header 中的 api-token</td></tr>
+    <tr><td>422</td><td>发送失败</td><td>参数格式正确但发送失败，如手机号格式不正确</td></tr>
+    <tr><td>429</td><td>请求限流</td><td>请求频率超限，当前限制：100次/分钟，请稍后重试</td></tr>
+  </tbody>
+</table>
+
+<h2>Serverless 接入</h2>
+<p>通过 Serverless 函数调用 NotifyHub，支持 sms.send()、email.send()、push.send()、voice.call()、batch.send() 等方法。</p>
+<pre><code>addEventListener('fetch', async (event) => {
+    const result = await NotifyHub.sms.send({
+        to: "+8613800138000",
+        template_id: "tpl_verify_code",
+        template_params: { code: "123456", expire: "5" }
+    });
+    event.respondWith(new Response(JSON.stringify(result.data), { status: 200 }));
+});</code></pre>
+
+<h2>Webhook 接入</h2>
+<p>NotifyHub 支持通过 Webhook 方式接入，当消息状态发生变更（送达、失败、已读等）时，系统将主动向您配置的地址推送回调通知。</p>
+<p>在发送接口中通过 <code>callback_url</code> 参数指定回调地址。每次回调请求的 Header 中会携带 <code>X-NotifyHub-Signature</code> 签名字段，用于验证回调来源。</p>
+
+<h2>SDK 接入</h2>
+<p>NotifyHub 提供多语言官方 SDK，封装了鉴权、重试、错误处理等通用逻辑。</p>
+<h3>安装</h3>
+<pre><code># Python
+pip install notifyhub-sdk
+
+# Node.js
+npm install @notifyhub/sdk
+
+# Go
+go get github.com/notifyhub/notifyhub-go</code></pre>
+
+<h3>Python 示例</h3>
+<pre><code>from notifyhub import NotifyHubClient
+
+client = NotifyHubClient(api_token="YOUR_API_TOKEN")
+
+# 发送短信
+result = client.sms.send(
+    to="+8613800138000",
+    template_id="tpl_verify_code",
+    template_params={"code": "123456", "expire": "5"}
+)
+
+# 发送邮件
+result = client.email.send(
+    to="user@example.com",
+    subject="您的订单已发货",
+    html="&lt;p&gt;您的订单已发货，请注意查收。&lt;/p&gt;"
+)</code></pre>
+
+<h3>Node.js 示例</h3>
+<pre><code>const { NotifyHubClient } = require('@notifyhub/sdk');
+
+const client = new NotifyHubClient({ apiToken: 'YOUR_API_TOKEN' });
+
+// 发送短信
+const result = await client.sms.send({
+  to: '+8613800138000',
+  templateId: 'tpl_verify_code',
+  templateParams: { code: '123456', expire: '5' }
+});
+
+// 发送 Push
+const pushResult = await client.push.send({
+  to: 'user_id_12345',
+  title: '您有一条新消息',
+  body: '点击查看详情'
+});</code></pre>
+
+</body>
+</html>
